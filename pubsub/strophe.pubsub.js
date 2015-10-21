@@ -422,6 +422,32 @@ Extend connection object to have plugin name 'pubsub'.
         return this._connection.sendIQ(iq.tree(), success, error, timeout);
     },
 
+    /** Function: deleteItem
+     *  Delete a pubsub item.
+     *
+     *  Parameters:
+     *    (String) node -  The name of the pubsub node.
+     *    (String) item_id -  The id of the pubsub item.
+     *    (Bool) notify - PEP notify
+     *    (Function) call_back - Called on server response.
+     *
+     *  Returns:
+     *    Iq id
+     */
+    deleteItem: function(node, item_id, notify, call_back) {
+        var that = this._connection;
+        var iqid = that.getUniqueId("pubsubdeleteitem");
+		notify = notify || true;
+		var iq = $iq({to: this.service, type: 'set', id: iqid})
+                .c('pubsub', {xmlns: Strophe.NS.PUBSUB })
+                .c('retract', notify ? {node: node, notify: "true"} : {node: node})
+                .c('item', {id: item_id});
+        that.addHandler(call_back, null, 'iq', null, iqid, null);
+        that.send(iq.tree());
+
+        return iqid;
+    },
+
     /** Function: getSubscriptions
      *  Get subscriptions of a JID.
      *
